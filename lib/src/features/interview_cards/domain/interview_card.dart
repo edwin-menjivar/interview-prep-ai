@@ -1,21 +1,35 @@
-import 'interview_field.dart';
-
 class InterviewCard {
   const InterviewCard({
     required this.id,
-    required this.field,
-    required this.question,
-    required this.strongAnswer,
-    required this.redFlags,
-    required this.tags,
-    required this.difficulty,
+    required this.groupId,
+    required this.cardTitle,
+    required this.priorityOne,
+    required this.priorityTwo,
+    required this.priorityThree,
   });
 
   final String id;
-  final InterviewField field;
-  final String question;
-  final String strongAnswer;
-  final String redFlags;
-  final List<String> tags;
-  final int difficulty;
+  final String groupId;
+  final String cardTitle;
+  final String priorityOne;
+  final String priorityTwo;
+  final String priorityThree;
+
+  InterviewCard copyWith({
+    String? id,
+    String? groupId,
+    String? cardTitle,
+    String? priorityOne,
+    String? priorityTwo,
+    String? priorityThree,
+  }) {
+    return InterviewCard(
+      id: id ?? this.id,
+      groupId: groupId ?? this.groupId,
+      cardTitle: cardTitle ?? this.cardTitle,
+      priorityOne: priorityOne ?? this.priorityOne,
+      priorityTwo: priorityTwo ?? this.priorityTwo,
+      priorityThree: priorityThree ?? this.priorityThree,
+    );
+  }
 }

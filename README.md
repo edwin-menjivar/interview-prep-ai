@@ -1,61 +1,30 @@
-# Interview Cards Pro
+# HireDeck AI
 
-A modern Flutter app for job interview prep cards with structured answers.
+Interview prep app with sign-in, role-based groups, and structured interview cards.
 
-## Focus
-- Software Engineering interviews
-- Product Management interviews
+## Included in this version
+- Sign-in gate with local session persistence
+- Groups screen with field filters, create/edit/delete
+- Cards screen per group with create/edit/delete
+- Card detail view with previous/next navigation
+- Local persistence for groups/cards and seeded starter content
+- Security hardening notes and CI checks
 
-## What is included
-- Search and filter interview cards by field and tags
-- Bookmark cards with local persistence
-- Detail screen with strong answer framework and red flags
-- Test coverage for controller logic and app boot smoke test
+## Run locally
+1. `cd /Users/edwin/Documents/development/flashy-tech-solutions/interview-prep-ai`
+2. `flutter pub get`
+3. `flutter run -d <device_id>`
 
-## Prerequisites
-1. Flutter stable (validated on Flutter 3.41.0)
-2. Dart 3.11+
-3. Xcode (for iOS simulator) or Android Studio (for Android emulator)
+No environment variables are required for this version.
 
-## Setup
-1. Open terminal in this repo:
-   - cd /Users/edwin/Documents/development/flashy-tech-solutions/interview_cards_pro
-2. Install dependencies:
-   - flutter pub get
+## Test and quality
+- `flutter analyze`
+- `flutter test`
 
-## Run the app
-1. List available devices:
-   - flutter devices
-2. Run on a selected device:
-   - flutter run -d <device_id>
-3. Optional desktop run (if enabled):
-   - flutter run -d macos
+## Test coverage
+- `test/auth_controller_test.dart`: sign-in validation and session behavior
+- `test/study_controller_test.dart`: groups/cards load and CRUD behavior
+- `test/widget_test.dart`: auth-gated app boot flow
 
-## Tests and quality checks
-- Run static analysis:
-  - flutter analyze
-- Run all tests:
-  - flutter test
-- Run one test file:
-  - flutter test test/interview_cards_controller_test.dart
-
-## Current test coverage
-- test/interview_cards_controller_test.dart
-  - Seed data includes at least two career fields
-  - Field + query filtering behavior
-  - Bookmark persistence behavior
-- test/widget_test.dart
-  - App boot smoke test
-
-## Project structure
-- lib/src/core: shared theme/utilities
-- lib/src/features/interview_cards/domain: entities/enums
-- lib/src/features/interview_cards/data: repository implementations
-- lib/src/features/interview_cards/application: state/controller
-- lib/src/features/interview_cards/presentation: screens/widgets
-
-## Security notes
-- No hardcoded credentials or signing secrets
-- Keep API keys and signing configs in local files or CI secret stores
-- Never commit env files, keystores, or service config secrets
-- Add remote backend auth/rules before enabling multi-user cloud sync
+## Security
+See `SECURITY.md` for hardening details and release checklist.

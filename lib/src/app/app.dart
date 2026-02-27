@@ -1,24 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/app_theme.dart';
-import '../features/interview_cards/presentation/interview_card_detail_screen.dart';
-import '../features/interview_cards/presentation/interview_cards_home_screen.dart';
+import '../features/auth/application/auth_controller.dart';
+import '../features/auth/application/auth_providers.dart';
+import '../features/auth/presentation/sign_in_screen.dart';
+import '../features/interview_cards/presentation/screens/groups_screen.dart';
 
-class InterviewCardsApp extends StatelessWidget {
+class InterviewCardsApp extends ConsumerWidget {
   const InterviewCardsApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final auth = ref.watch(authControllerProvider);
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Interview Cards Pro',
+      title: 'HireDeck AI',
       theme: AppTheme.lightTheme,
-      initialRoute: InterviewCardsHomeScreen.routeName,
-      routes: {
-        InterviewCardsHomeScreen.routeName: (_) =>
-            const InterviewCardsHomeScreen(),
-        InterviewCardDetailScreen.routeName: (_) =>
-            const InterviewCardDetailScreen(),
+      home: switch (auth.status) {
+        AuthStatus.loading => const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          ),
+        AuthStatus.signedOut => const SignInScreen(),
+        AuthStatus.signedIn => const GroupsScreen(),
       },
     );
   }

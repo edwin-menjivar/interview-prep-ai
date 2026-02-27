@@ -1,92 +1,169 @@
+import 'dart:convert';
+
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../domain/interview_card.dart';
 import '../domain/interview_field.dart';
+import '../domain/interview_group.dart';
 import 'interview_card_repository.dart';
 
 class SeedInterviewCardRepository implements InterviewCardRepository {
+  static const _groupsKey = 'hiredeck.groups.v1';
+  static const _cardsKey = 'hiredeck.cards.v1';
+
   @override
-  Future<List<InterviewCard>> fetchCards() async {
-    return const [
-      InterviewCard(
-        id: 'se_01',
-        field: InterviewField.softwareEngineering,
-        question: 'Tell me about a system you designed end-to-end.',
-        strongAnswer:
-            'Define scope, constraints, tradeoffs, architecture, rollout, metrics, and post-launch improvements.',
-        redFlags:
-            'Only describing coding details without architecture or tradeoff reasoning.',
-        tags: ['system design', 'architecture', 'ownership'],
-        difficulty: 4,
+  Future<List<InterviewCard>> loadCards() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_cardsKey);
+    if (raw == null || raw.isEmpty) {
+      return _seedCards;
+    }
+
+    final decoded = jsonDecode(raw);
+    if (decoded is! List) {
+      return _seedCards;
+    }
+
+    return decoded
+        .whereType<Map<String, dynamic>>()
+        .map(
+          (json) => InterviewCard(
+            id: json['id'] as String,
+            groupId: json['groupId'] as String,
+            cardTitle: json['cardTitle'] as String,
+            priorityOne: json['priorityOne'] as String? ?? '',
+            priorityTwo: json['priorityTwo'] as String? ?? '',
+            priorityThree: json['priorityThree'] as String? ?? '',
+          ),
+        )
+        .toList(growable: false);
+  }
+
+  @override
+  Future<List<InterviewGroup>> loadGroups() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_groupsKey);
+    if (raw == null || raw.isEmpty) {
+      return _seedGroups;
+    }
+
+    final decoded = jsonDecode(raw);
+    if (decoded is! List) {
+      return _seedGroups;
+    }
+
+    return decoded
+        .whereType<Map<String, dynamic>>()
+        .map(
+          (json) => InterviewGroup(
+            id: json['id'] as String,
+            title: json['title'] as String,
+            field: InterviewField.values.firstWhere(
+              (f) => f.name == json['field'],
+              orElse: () => InterviewField.softwareEngineering,
+            ),
+            description: json['description'] as String? ?? '',
+          ),
+        )
+        .toList(growable: false);
+  }
+
+  @override
+  Future<void> saveCards(List<InterviewCard> cards) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      _cardsKey,
+      jsonEncode(
+        cards
+            .map(
+              (card) => {
+                'id': card.id,
+                'groupId': card.groupId,
+                'cardTitle': card.cardTitle,
+                'priorityOne': card.priorityOne,
+                'priorityTwo': card.priorityTwo,
+                'priorityThree': card.priorityThree,
+              },
+            )
+            .toList(growable: false),
       ),
-      InterviewCard(
-        id: 'se_02',
-        field: InterviewField.softwareEngineering,
-        question: 'How do you handle production incidents?',
-        strongAnswer:
-            'Stabilize first, communicate impact, identify root cause, ship corrective action, and prevent recurrence with runbooks.',
-        redFlags: 'Blaming others, no incident timeline, or no prevention plan.',
-        tags: ['incident response', 'ops', 'leadership'],
-        difficulty: 3,
+    );
+  }
+
+  @override
+  Future<void> saveGroups(List<InterviewGroup> groups) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      _groupsKey,
+      jsonEncode(
+        groups
+            .map(
+              (group) => {
+                'id': group.id,
+                'title': group.title,
+                'field': group.field.name,
+                'description': group.description,
+              },
+            )
+            .toList(growable: false),
       ),
-      InterviewCard(
-        id: 'se_03',
-        field: InterviewField.softwareEngineering,
-        question: 'Describe a difficult technical decision you made.',
-        strongAnswer:
-            'Compare options with explicit tradeoffs, justify the final choice, and quantify outcomes after launch.',
-        redFlags: 'Decision made by preference only, no measurable impact.',
-        tags: ['tradeoffs', 'decision making'],
-        difficulty: 3,
-      ),
-      InterviewCard(
-        id: 'se_04',
-        field: InterviewField.softwareEngineering,
-        question: 'How do you ensure code quality at scale?',
-        strongAnswer:
-            'Use linting, tests, CI checks, clear code ownership, and change management standards.',
-        redFlags: 'Reliance on manual review only or skipping tests under pressure.',
-        tags: ['quality', 'testing', 'ci/cd'],
-        difficulty: 2,
-      ),
-      InterviewCard(
-        id: 'pm_01',
-        field: InterviewField.productManagement,
-        question: 'How do you prioritize roadmap items?',
-        strongAnswer:
-            'Tie goals to business outcomes, score opportunities, align stakeholders, and sequence by impact/risk.',
-        redFlags: 'Feature-first thinking without user problem clarity or metrics.',
-        tags: ['roadmap', 'prioritization', 'strategy'],
-        difficulty: 3,
-      ),
-      InterviewCard(
-        id: 'pm_02',
-        field: InterviewField.productManagement,
-        question: 'How would you launch a new feature with limited data?',
-        strongAnswer:
-            'Frame hypotheses, define success metrics, ship MVP, and iterate using structured feedback loops.',
-        redFlags: 'No experiment design, no rollback plan, no measurable KPI.',
-        tags: ['go-to-market', 'experimentation'],
-        difficulty: 4,
-      ),
-      InterviewCard(
-        id: 'pm_03',
-        field: InterviewField.productManagement,
-        question: 'Tell me about a time engineering pushed back on your plan.',
-        strongAnswer:
-            'Show alignment process: problem reframing, constraints review, compromise, and measurable shared outcome.',
-        redFlags: 'Escalation-only behavior or ignoring engineering constraints.',
-        tags: ['cross-functional', 'leadership'],
-        difficulty: 3,
-      ),
-      InterviewCard(
-        id: 'pm_04',
-        field: InterviewField.productManagement,
-        question: 'What metrics do you use to judge product success?',
-        strongAnswer:
-            'Track north-star + guardrail metrics, segment users, and connect movement to product decisions.',
-        redFlags: 'Vanity metrics only or no causal reasoning.',
-        tags: ['metrics', 'analytics'],
-        difficulty: 2,
-      ),
-    ];
+    );
   }
 }
+
+const List<InterviewGroup> _seedGroups = [
+  InterviewGroup(
+    id: 'group_se_behavioral',
+    title: 'SWE Behavioral',
+    field: InterviewField.softwareEngineering,
+    description: 'Ownership, conflict, incidents, and leadership stories.',
+  ),
+  InterviewGroup(
+    id: 'group_se_systems',
+    title: 'SWE System Design',
+    field: InterviewField.softwareEngineering,
+    description: 'Scalability, tradeoffs, APIs, and production readiness.',
+  ),
+  InterviewGroup(
+    id: 'group_pm_core',
+    title: 'PM Core Interview',
+    field: InterviewField.productManagement,
+    description: 'Prioritization, metrics, roadmap, and strategy prompts.',
+  ),
+];
+
+const List<InterviewCard> _seedCards = [
+  InterviewCard(
+    id: 'card_1',
+    groupId: 'group_se_behavioral',
+    cardTitle: 'Tell me about a production incident you owned.',
+    priorityOne:
+        'Situation + impact. Clarify urgency and customer blast radius in 1-2 sentences.',
+    priorityTwo:
+        'Actions: mitigation, communication, and timeline. Show cross-team leadership.',
+    priorityThree:
+        'Outcome + learning: root cause fix and what you changed to prevent recurrence.',
+  ),
+  InterviewCard(
+    id: 'card_2',
+    groupId: 'group_se_systems',
+    cardTitle: 'Design a URL shortener.',
+    priorityOne:
+        'Requirements and scale assumptions. Define read/write ratio and latency targets.',
+    priorityTwo:
+        'Core architecture, data model, sharding, cache, and failure handling.',
+    priorityThree:
+        'Tradeoffs and rollout plan. Add observability and anti-abuse strategy.',
+  ),
+  InterviewCard(
+    id: 'card_3',
+    groupId: 'group_pm_core',
+    cardTitle: 'How do you prioritize roadmap items?',
+    priorityOne:
+        'Define objective and user problem. Show measurable business outcome.',
+    priorityTwo:
+        'Use a scoring framework with impact, confidence, effort, and strategic alignment.',
+    priorityThree:
+        'Share stakeholder alignment and what you de-prioritized with reasoning.',
+  ),
+];
