@@ -5,6 +5,7 @@ import '../../application/interview_cards_providers.dart';
 import '../../domain/interview_card.dart';
 import '../../domain/interview_group.dart';
 import 'card_detail_screen.dart';
+import 'practice_session_screen.dart';
 
 class CardsScreen extends ConsumerWidget {
   const CardsScreen({super.key, required this.group});
@@ -20,6 +21,22 @@ class CardsScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(group.title),
         actions: [
+          IconButton(
+            onPressed: cards.isEmpty
+                ? null
+                : () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => PracticeSessionScreen(
+                          groupTitle: group.title,
+                          cards: cards,
+                        ),
+                      ),
+                    );
+                  },
+            icon: const Icon(Icons.play_circle_outline),
+            tooltip: 'Start practice',
+          ),
           IconButton(
             onPressed: () => _showCardEditor(context, ref, group.id),
             icon: const Icon(Icons.add),
