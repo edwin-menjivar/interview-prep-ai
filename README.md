@@ -7,6 +7,7 @@ Interview prep app with sign-in, role-based groups, and structured interview car
 - Groups screen with field filters, create/edit/delete
 - Cards screen per group with create/edit/delete
 - Card detail view with previous/next navigation
+- Practice session mode with random card order, self-rating, and summary
 - Local persistence for groups/cards and seeded starter content
 - Security hardening notes and CI checks
 
